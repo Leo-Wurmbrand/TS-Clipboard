@@ -1,7 +1,7 @@
 /**
  * @file Functionality to use the computer's clipboard.
  *
- * @version 0.0.1
+ * @version 1.0.0
  *
  * @author Leo Wurmbrand <leo.wurmbrand@gmail.com>
  * @copyright Leo Wurmbrand 2024–2026
@@ -15,9 +15,12 @@
 /**
  * Utility class to integrate with the computer's clipboard.
  *
- * @since 0.0.1
+ * @since 1.0.0
  *
  * @example Clipboard.copy("hello, world!");
+ * @example Clipboard.copy("hello, world!", (text) => console.log("Copied text: ", text));
+ * @example const text = await Clipboard.paste();
+ * @example Clipboard.paste((text) => console.log(text));
  */
 export default class Clipboard {
     /**
@@ -41,6 +44,52 @@ export default class Clipboard {
         new Clipboard(...args);
     }
     /**
+     * Reads text from the clipboard.
+     *
+     * @async
+     * @param {CopyPasteCallback} [callback] - Executed with the clipboard text on success.
+     * @returns {Promise<string | null>} The clipboard text, or null if reading failed.
+     */
+    static async paste(callback) {
+        const text = await Clipboard.attemptPaste();
+        if (text === null) {
+            document.dispatchEvent(new CustomEvent('clipboardPaste__failure'));
+            return null;
+        }
+        if (callback) {
+            callback(text);
+        }
+        else {
+            document.dispatchEvent(new CustomEvent('clipboardPaste__success', {
+                detail: { text }
+            }));
+        }
+        return text;
+    }
+    /**
+ * Reads rich content from the clipboard.
+ *
+ * @async
+ * @param {PasteItemsCallback} [callback] - Executed with the clipboard items on success.
+ * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if reading failed.
+ */
+    static async pasteItems(callback) {
+        const items = await Clipboard.attemptPasteItems();
+        if (items === null) {
+            document.dispatchEvent(new CustomEvent('clipboardPasteItems__failure'));
+            return null;
+        }
+        if (callback) {
+            callback(items);
+        }
+        else {
+            document.dispatchEvent(new CustomEvent('clipboardPasteItems__success', {
+                detail: { items }
+            }));
+        }
+        return items;
+    }
+    /**
      * Handles copying and executes the callback or triggers a document event.
      *
      * @async
@@ -49,7 +98,7 @@ export default class Clipboard {
         const wasSuccess = await this.attemptCopy();
         if (wasSuccess) {
             if (this.callback) {
-                this.callback();
+                this.callback(this.text);
             }
             else {
                 const event = new CustomEvent('clipboardCopy__success', {
@@ -94,7 +143,7 @@ export default class Clipboard {
      */
     alternativeCopy() {
         // Check if clipboard API is supported
-        console.warn('Clipboard API may not be not supported');
+        console.warn('Clipboard API may not be not supported.');
         // Attempt to copy by creating a textbox, selecting it, and copying
         const tempTextArea = document.createElement('textarea');
         tempTextArea.value = this.text;
@@ -127,6 +176,44 @@ export default class Clipboard {
         catch (error) {
             console.error('Could not copy text: ', error);
             return false;
+        }
+    }
+    /**
+     * Reads a string using the Navigator API.
+     *
+     * @async
+     * @returns {Promise<string | null>} The clipboard text, or null if it couldn't be read.
+     */
+    static async attemptPaste() {
+        if (!navigator.clipboard?.readText) {
+            console.warn('Clipboard API does not support reading in this browser.');
+            return null;
+        }
+        try {
+            return await navigator.clipboard.readText();
+        }
+        catch (error) {
+            console.error('Could not paste text: ', error);
+            return null;
+        }
+    }
+    /**
+     * Reads clipboard items using the Navigator API.
+     *
+     * @async
+     * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if they couldn't be read.
+     */
+    static async attemptPasteItems() {
+        if (!navigator.clipboard?.read) {
+            console.warn('Clipboard API does not support reading items in this browser.');
+            return null;
+        }
+        try {
+            return await navigator.clipboard.read();
+        }
+        catch (error) {
+            console.error('Could not paste items: ', error);
+            return null;
         }
     }
 }
