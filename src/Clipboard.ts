@@ -6,11 +6,17 @@
  * @author Leo Wurmbrand <leo.wurmbrand@gmail.com>
  * @copyright Leo Wurmbrand 2024–2026
  * @license GPLv2
+ * {@link https://github.com/Leo-Wurmbrand/TS-Clipboard GitHub}
  */
 
+/** A function to execute after copying/pasting. */
 type CopyPasteCallback = (text: string) => void;
+
+/** A function to execute after pasting items. */
 type PasteItemsCallback = (items: ClipboardItem[]) => void;
-type Props = [text: string, callback?: CopyPasteCallback];
+
+/** The general props passed to copy calls. */
+type CopyProps = [text: string, callback?: CopyPasteCallback];
 
 /*
  * ******************************************
@@ -31,20 +37,32 @@ type Props = [text: string, callback?: CopyPasteCallback];
  */
 export default class Clipboard {
 
-	/** The text being copied. */
-	private text: Props[0];
+	/** 
+	 * The text being copied. 
+	 * 
+	 * @private
+	 */
+	private text: CopyProps[0];
 
-	/** The callback to execute if copying succeeded. */
-	private callback?: Props[1];
+	/** 
+	 * The callback to execute if copying succeeded. 
+	 * 
+	 * @private
+	 */
+	private callback?: CopyProps[1];
 
 	/**
 	 * Constructor and executor for copying to clipboard.
 	 * 
-	 * @param {...Props} args - The arguments (text: string, callback?: () => void).
+	 * @private
+	 * 
+	 * @param {...CopyProps} args - The arguments (text: string, callback?: () => void).
+	 * 
+	 * @throws {Error} If no text is provided to copy.
 	 */
-	private constructor(...args: Props) {
+	private constructor(...args: CopyProps) {
 
-		if (!args[0]) throw new Error('No text was provided to be copied');
+		if (!args[0]) throw new Error('No text was provided to be copied.');
 
 		this.text = args[0];
 		this.callback = args[1];
@@ -56,9 +74,11 @@ export default class Clipboard {
 	/**
 	 * Static alias for the constructor.
 	 * 
-	 * @param {...Props} args - The arguments (text: string, callback?: () => void).
+	 * @public
+	 * 
+	 * @param {...CopyProps} args - The arguments (text: string, callback?: () => void).
 	 */
-	public static copy(...args: Props) {
+	public static copy(...args: CopyProps) {
 
 		new Clipboard(...args);
 
@@ -66,9 +86,13 @@ export default class Clipboard {
 
 	/**
 	 * Reads text from the clipboard.
+	 * 
+	 * @public
 	 *
 	 * @async
+	 * 
 	 * @param {CopyPasteCallback} [callback] - Executed with the clipboard text on success.
+	 * 
 	 * @returns {Promise<string | null>} The clipboard text, or null if reading failed.
 	 */
 	public static async paste(callback?: CopyPasteCallback): Promise<string | null> {
@@ -98,11 +122,15 @@ export default class Clipboard {
 
 	}
 
-		/**
+	/**
 	 * Reads rich content from the clipboard.
+	 * 
+	 * @public
 	 *
 	 * @async
+	 * 
 	 * @param {PasteItemsCallback} [callback] - Executed with the clipboard items on success.
+	 * 
 	 * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if reading failed.
 	 */
 	public static async pasteItems(callback?: PasteItemsCallback): Promise<ClipboardItem[] | null> {
@@ -134,6 +162,8 @@ export default class Clipboard {
 
 	/**
 	 * Handles copying and executes the callback or triggers a document event.
+	 * 
+	 * @private
 	 * 
 	 * @async
 	 */
@@ -174,8 +204,11 @@ export default class Clipboard {
 
 	/**
 	 * Attempts various methods of copying the string.
+	 * 
+	 * @private
 	 *
 	 * @async
+	 * 
 	 * @returns {Promise<boolean>} Whether text was copied to clipboard.
 	 */
 	private async attemptCopy(): Promise<boolean> {
@@ -197,6 +230,8 @@ export default class Clipboard {
 
 	/**
 	 * Copies a string using an outdated API.
+	 * 
+	 * @private
 	 * 
 	 * @returns {boolean} Whether text was copied to clipboard.
 	 */
@@ -234,7 +269,10 @@ export default class Clipboard {
 	/**
 	 * Copies a string using the Navigator API.
 	 * 
+	 * @private
+	 * 
 	 * @async
+	 * 
 	 * @returns {Promise<boolean>} Whether text was copied to clipboard.
 	 */
 	private async navigatorCopy(): Promise<boolean> {
@@ -255,8 +293,11 @@ export default class Clipboard {
 
 	/**
 	 * Reads a string using the Navigator API.
+	 * 
+	 * @private
 	 *
 	 * @async
+	 * 
 	 * @returns {Promise<string | null>} The clipboard text, or null if it couldn't be read.
 	 */
 	private static async attemptPaste(): Promise<string | null> {
@@ -283,8 +324,11 @@ export default class Clipboard {
 
 	/**
 	 * Reads clipboard items using the Navigator API.
+	 * 
+	 * @private
 	 *
 	 * @async
+	 * 
 	 * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if they couldn't be read.
 	 */
 	private static async attemptPasteItems(): Promise<ClipboardItem[] | null> {

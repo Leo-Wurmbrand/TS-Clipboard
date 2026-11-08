@@ -6,6 +6,7 @@
  * @author Leo Wurmbrand <leo.wurmbrand@gmail.com>
  * @copyright Leo Wurmbrand 2024–2026
  * @license GPLv2
+ * {@link https://github.com/Leo-Wurmbrand/TS-Clipboard GitHub}
  */
 /*
  * ******************************************
@@ -26,11 +27,15 @@ export default class Clipboard {
     /**
      * Constructor and executor for copying to clipboard.
      *
-     * @param {...Props} args - The arguments (text: string, callback?: () => void).
+     * @private
+     *
+     * @param {...CopyProps} args - The arguments (text: string, callback?: () => void).
+     *
+     * @throws {Error} If no text is provided to copy.
      */
     constructor(...args) {
         if (!args[0])
-            throw new Error('No text was provided to be copied');
+            throw new Error('No text was provided to be copied.');
         this.text = args[0];
         this.callback = args[1];
         this.handleCopy();
@@ -38,7 +43,9 @@ export default class Clipboard {
     /**
      * Static alias for the constructor.
      *
-     * @param {...Props} args - The arguments (text: string, callback?: () => void).
+     * @public
+     *
+     * @param {...CopyProps} args - The arguments (text: string, callback?: () => void).
      */
     static copy(...args) {
         new Clipboard(...args);
@@ -46,8 +53,12 @@ export default class Clipboard {
     /**
      * Reads text from the clipboard.
      *
+     * @public
+     *
      * @async
+     *
      * @param {CopyPasteCallback} [callback] - Executed with the clipboard text on success.
+     *
      * @returns {Promise<string | null>} The clipboard text, or null if reading failed.
      */
     static async paste(callback) {
@@ -67,12 +78,16 @@ export default class Clipboard {
         return text;
     }
     /**
- * Reads rich content from the clipboard.
- *
- * @async
- * @param {PasteItemsCallback} [callback] - Executed with the clipboard items on success.
- * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if reading failed.
- */
+     * Reads rich content from the clipboard.
+     *
+     * @public
+     *
+     * @async
+     *
+     * @param {PasteItemsCallback} [callback] - Executed with the clipboard items on success.
+     *
+     * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if reading failed.
+     */
     static async pasteItems(callback) {
         const items = await Clipboard.attemptPasteItems();
         if (items === null) {
@@ -91,6 +106,8 @@ export default class Clipboard {
     }
     /**
      * Handles copying and executes the callback or triggers a document event.
+     *
+     * @private
      *
      * @async
      */
@@ -121,7 +138,10 @@ export default class Clipboard {
     /**
      * Attempts various methods of copying the string.
      *
+     * @private
+     *
      * @async
+     *
      * @returns {Promise<boolean>} Whether text was copied to clipboard.
      */
     async attemptCopy() {
@@ -138,6 +158,8 @@ export default class Clipboard {
     }
     /**
      * Copies a string using an outdated API.
+     *
+     * @private
      *
      * @returns {boolean} Whether text was copied to clipboard.
      */
@@ -165,7 +187,10 @@ export default class Clipboard {
     /**
      * Copies a string using the Navigator API.
      *
+     * @private
+     *
      * @async
+     *
      * @returns {Promise<boolean>} Whether text was copied to clipboard.
      */
     async navigatorCopy() {
@@ -181,7 +206,10 @@ export default class Clipboard {
     /**
      * Reads a string using the Navigator API.
      *
+     * @private
+     *
      * @async
+     *
      * @returns {Promise<string | null>} The clipboard text, or null if it couldn't be read.
      */
     static async attemptPaste() {
@@ -200,7 +228,10 @@ export default class Clipboard {
     /**
      * Reads clipboard items using the Navigator API.
      *
+     * @private
+     *
      * @async
+     *
      * @returns {Promise<ClipboardItem[] | null>} The clipboard items, or null if they couldn't be read.
      */
     static async attemptPasteItems() {
